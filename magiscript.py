@@ -28,8 +28,6 @@ def create_dockerfile(path, b_env):
         df.write("RUN apt-get update && apt-get install --no-install-recommends -y libc6-dev libcap-dev libcap-ng-dev libelf-dev libpopt-dev\n")
         df.write("RUN git clone https://github.com/TuxML/tuxml-kci.git\n")
         df.write("RUN python3 tuxml-kci/tuxml_kci.py --kernel_version 5.9 --config defconfig\n")
-        df.write("RUN pwd\n")
-        df.write("RUN cat tuxml-kci/kernel/build/bmeta.json\n")
 
 
 if __name__ == '__main__':
