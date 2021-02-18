@@ -15,13 +15,6 @@ and then `docker run -it tuxml-kci-gcc-8:kv5.8 python3 tuxml_kci.py --config tin
 it should give someting like:
 ```
 ...
-Extracting 5.9.tar.xz.
-5.9.tar.xz has been extracted into linux-5.9
-Cleaning the source code . . .
-Trying to make tinyconfig into /tuxml-kci/kernel
-/tuxml-kci
-/kernelci-core
-
 {
     "arch": "x86_64",
     "build_environment": "gcc-8",
@@ -48,8 +41,4 @@ Trying to make tinyconfig into /tuxml-kci/kernel
     "vmlinux_file_size": 11614872,
     "vmlinux_text_size": 4195646
 }
-Removing intermediate container 56d635cfacc4
- ---> 3d2b101f5477
-Successfully built 3d2b101f5477
-Successfully tagged gcc-8_247:latest
 ```
