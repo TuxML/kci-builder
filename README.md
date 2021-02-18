@@ -4,7 +4,13 @@
 
 `sh build.sh` (can take a while, but build a base Docker image)
 
-`python3 magicscript.py gcc-8` 
+`wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.8.tar.xz` (example)
+`python3 magicscript.py gcc-8 5.8` (5.8 corresponds to linux-5.8 and we assume there is a tar.xz in the local folder)
+
+you should get an image:
+`tuxml-kci-gcc-8:kv5.8` that contains everything (kci, tuxml-kci, kernel source)
+
+and then `docker run -it tuxml-kci-gcc-8:kv5.8 python3 tuxml_kci.py --config tinyconfig`
 
 it should give someting like:
 ```
