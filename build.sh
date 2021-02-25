@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/bash
+
 if [ $# -eq 0 ]
   then
     tag='latest'

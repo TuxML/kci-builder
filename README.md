@@ -2,17 +2,44 @@
 
 ## Getting started
 
-`sh build.sh` (can take a while, but build a base Docker image)
+> Can take a while, but build a base Docker image that will be used for specific building environment images
+> 
+> `sh build.sh` 
 
-`wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.8.tar.xz` (example)
-`python3 magicscript.py gcc-8 5.8` (5.8 corresponds to linux-5.8 and we assume there is a tar.xz in the local folder)
+### Dependencies 
+> Please make sure that you have pyyaml installed with 
+> 
+> `pip3 install pyyaml`
+## Script usage
 
-you should get an image:
-`tuxml-kci-gcc-8:kv5.8` that contains everything (kci, tuxml-kci, kernel source)
+> ``python3 magiscript.py [-h] -b BUILD_ENV -a ARCH -k KVERSION``
+> 
+> Arguments details : 
+> 
+> `-h` will print a help message
+> 
+> `-b` BUILD_ENV or `--build-env` BUILD_ENV, must be used with a value to specify the building environment like **gcc-7** or **gcc8**
+>
+> `-a` ARCH or `--arch` ARCH, must be used with a value to specify the architecture for the build. Available architectures are : x86_64, arm, arm64, mips and riscv64
+> 
+> `k` KVERSION or `--kversion` KVERSION, must be used with a value to specify the version of the kernel to be downloaded and used for the build
 
-and then `docker run -it tuxml-kci-gcc-8:kv5.8 python3 tuxml_kci.py --config tinyconfig`
+## Example
 
-it should give someting like:
+> ``python3 magiscript.py -b gcc-8 -a x86_64 -k 4.14``
+
+### Remarks
+> If the dockerfile for a specific configuration already exists, it will not be created again
+
+## Build the kernel
+
+> Once the image has been created, it should have the following name `tuxml-kci-[BUILD_ENV]_[ARCH]` with the tag `kv[KVERSION]`
+> 
+> In order to run the container `docker run -it tuxml-kci-[BUILD_ENV]_[ARCH]:kv[KVERSION] python3 tuxml_kci.py --config tinyconfig`
+
+The output metadata from the build will be stored in the same folder as the Dockerfile folder.
+
+Example of metadata result:
 ```
 ...
 {
