@@ -35,7 +35,7 @@
 
 > Once the image has been created, it should have the following name `tuxml-kci-[BUILD_ENV]_[ARCH]` with the tag `kv[KVERSION]`
 > 
-> In order to run the container `docker run -it tuxml-kci-[BUILD_ENV]_[ARCH]:kv[KVERSION] python3 tuxml_kci.py --config tinyconfig`
+> In order to run the container `docker run -d -v shared_volume:/shared_volume tuxml-kci-[BUILD_ENV]_[ARCH]:kv[KVERSION] python3 tuxml_kci.py --config tinyconfig`
 
 The output metadata from the build will be stored in the same folder as the Dockerfile folder.
 
