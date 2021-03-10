@@ -111,6 +111,7 @@ if __name__ == '__main__':
         dir_content = os.listdir(volume_name)
         dir_lookup = "{b_env}_{arch}".format(b_env=args['build_env'], arch=args['arch'])
 
+#TODO find a better way to do this
         if len(args) == 2:
             build_image(args['build_env'], args['arch'])
         else:
