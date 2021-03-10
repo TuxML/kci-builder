@@ -49,7 +49,7 @@ def create_dockerfile(dockerfile_name, b_env, arch):
 
 def run_dockerfile(b_env, arch, kver, kconfig):
     current_path = os.getcwd() + "/" + volume_name
-    container_name = "tuxml-kci-%s_%s:latest" % (b_env, arch)
+    container_name = "tuxml-kci-%s_%s" % (b_env, arch)
     command = "docker run --name %s -d -v %s:/%s %s:latest " % (container_name,current_path, volume_name, container_name)
     subprocess.run(command, shell=True)
 
