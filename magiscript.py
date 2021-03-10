@@ -1,6 +1,5 @@
 import subprocess
 import os
-import sys
 import yaml
 import argparse
 
@@ -88,7 +87,8 @@ if __name__ == '__main__':
         dir_content = os.listdir(volume_name)
         dir_lookup = "{b_env}_{arch}".format(b_env=args['build_env'], arch=args['arch'])
 
+        build_image(args['build_env'], args['arch'], args['kversion'])
         if dir_lookup not in dir_content:
-            build_image(args['build_env'], args['arch'], args['kversion'])
+            pass
         else:
             print("image for %s exists already" % dir_lookup)
