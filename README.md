@@ -14,7 +14,7 @@
 
 > **build the kernel image :** ``python3 magiscript.py build [-h] -b BUILD_ENV -a ARCH``
 > 
-> **run compilation in a container :** ``python3 magiscript.py run [-h] -b BUILD_ENV -a ARCH -c CONFIG -k KVERSION``  
+> **run compilation in a container :** ``python3 magiscript.py run [-h] -b BUILD_ENV -a ARCH -c CONFIG -k KVERSION``6666  
 > 
 > Arguments details : 
 >   
