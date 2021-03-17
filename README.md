@@ -12,9 +12,9 @@
 > `pip3 install pyyaml`
 ## Script usage
 
-> **build the kernel image :** ``python3 magiscript.py build [-h] -b BUILD_ENV -a ARCH``
+> 1) **build the kernel image :** ``python3 magiscript.py build [-h] -b BUILD_ENV -a ARCH``
 > 
-> **run compilation in a container :** ``python3 magiscript.py run [-h] -b BUILD_ENV -a ARCH -c CONFIG -k KVERSION``6666  
+> 2) **run compilation in a container :** ``python3 magiscript.py run [-h] -b BUILD_ENV -a ARCH -c CONFIG -k KVERSION``6666  
 > 
 > Arguments details : 
 >   
@@ -41,9 +41,11 @@
 ### Remarks
 > If the dockerfile for a specific configuration already exists, it will not be created again
 
-The output metadata from the build will be stored in the same folder as the Dockerfile folder.
+The output metadata from the build will be stored in the same folder as the Dockerfile folder. The path should look like this:
 
-Example of metadata result:
+> **(shared_volume/[gcc-x_archy]/[timestamp.kver])/**
+
+Example of metadata result: (bmeta.json)
 ```
 ...
 {
