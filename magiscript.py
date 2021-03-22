@@ -34,7 +34,7 @@ def build_image(b_env, arch):
 
     container_name = f"tuxml-kci-{b_env}_{arch}"
     print(f"Building image for {container_name}")
-    docker_client.images.build(path=path, tag=f"{container_name}:latest", nocache=True)
+    docker_client.images.build(path=path, tag=f"{container_name}:latest", nocache=True, forcerm=True)
 
 
 def create_dockerfile(path, b_env, arch):
@@ -93,7 +93,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
 
     command = f"python3 tuxml_kci.py -b {b_env} -k {kver} -a {arch} -c {kconfig}"
     build_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
-    docker_client.api.exec_start(exec_id=build_cmd, stream=True)
+    docker_client.api.exec_start(exec_id=build_cmd, stream=True, tty=True, detach=False)
 
 
 if __name__ == '__main__':

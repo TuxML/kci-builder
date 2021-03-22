@@ -65,3 +65,5 @@ RUN echo 'admin:password' | chpasswd
 CMD ["/usr/sbin/sshd", "-D"]
 
 RUN git clone https://github.com/kernelci/kernelci-core.git
+
+RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list
