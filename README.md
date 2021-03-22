@@ -14,7 +14,7 @@
 
 > 1) **build the kernel image :** ``python3 magiscript.py build [-h] -b BUILD_ENV -a ARCH``
 > 
-> 2) **run compilation in a container :** ``python3 magiscript.py run [-h] -b BUILD_ENV -a ARCH -c CONFIG -k KVERSION``6666  
+> 2) **run compilation in a container :** ``python3 magiscript.py run [-h] -b BUILD_ENV -a ARCH -c CONFIG -k KVERSION``  
 > 
 > Arguments details : 
 >   
@@ -50,28 +50,43 @@ Example of metadata result: (bmeta.json)
 ...
 {
     "arch": "x86_64",
-    "build_environment": "gcc-8",
+    "build_environment": "gcc-9",
     "build_log": "build.log",
     "build_platform": [
         "Linux",
-        "56d635cfacc4",
-        "5.3.7-301.fc31.x86_64",
-        "#1 SMP Mon Oct 21 19:18:58 UTC 2019",
+        "11e16465453f",
+        "5.4.72-microsoft-standard-WSL2",
+        "#1 SMP Wed Oct 28 23:40:43 UTC 2020",
         "x86_64",
         ""
     ],
-    "build_threads": 10,
-    "build_time": 146.69,
+    "build_threads": 8,
+    "build_time": 157.61,
     "compiler": "gcc",
-    "compiler_version": "8",
-    "compiler_version_full": "gcc (Debian 8.3.0-6) 8.3.0",
+    "compiler_version": "9",
+    "compiler_version_full": "gcc (Debian 9.3.0-22) 9.3.0",
     "cross_compile": "",
-    "defconfig": "none",
-    "defconfig_full": "none",
+    "defconfig": "tinyconfig",
+    "defconfig_full": "tinyconfig",
+    "dtb_dir": null,
+    "file_server_resource": "",
+    "git_branch": "",
+    "git_commit": "",
+    "git_describe": "",
+    "git_describe_v": "",
+    "git_url": "",
+    "job": "",
+    "kconfig_fragments": "",
+    "kernel_config": "kernel.config",
+    "kernel_image": "bzImage",
+    "kselftests": null,
+    "modules": null,
     "status": "PASS",
-    "vmlinux_bss_size": 1421312,
-    "vmlinux_data_size": 244608,
-    "vmlinux_file_size": 11614872,
-    "vmlinux_text_size": 4195646
+    "system_map": "System.map",
+    "text_offset": "0x01000000",
+    "vmlinux_bss_size": 94208,
+    "vmlinux_data_size": 208832,
+    "vmlinux_file_size": 3203464,
+    "vmlinux_text_size": 667702
 }
 ```
