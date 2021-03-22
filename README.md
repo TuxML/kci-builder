@@ -43,7 +43,7 @@
 
 The output metadata from the build will be stored in the same folder as the Dockerfile folder. The path should look like this:
 
-> **(shared_volume/[gcc-x_archy]/[timestamp.kver])/**
+> **kci-builder/shared_volume/[gcc-x_archy]/[timestamp.kver]/**
 
 Example of metadata result: (bmeta.json)
 ```
