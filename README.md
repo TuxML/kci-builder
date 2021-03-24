@@ -50,6 +50,7 @@ The output metadata from the build will be stored in the same folder as the Dock
 > **kci-builder/shared_volume/[gcc-x_archy]/[timestamp.kver]/**
 
 Example of metadata result: (bmeta.json)
+
 ```
 ...
 {
