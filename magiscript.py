@@ -41,7 +41,7 @@ def create_dockerfile(path, b_env, arch):
     with open(path + "/Dockerfile", mode="w") as df:
         df.write("FROM kci_base\n")
         df.write(dependencies_data['arch'][arch].format(b_env_ver=b_env_ver))
-        df.write("RUN git clone https://github.com/bibi14010/Tuxml.git\n")
+        df.write("RUN git clone https://github.com/TuxML/tuxml-kci.git\n")
 
 
 def run_dockerfile(b_env, arch, kver, kconfig):
