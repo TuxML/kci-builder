@@ -54,10 +54,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
     binding_config = docker_client.api.create_host_config(binds={f"{local_shared_volume}/": {
         'bind': f"/{volume_name}",
         'mode': 'rw'}
-    },
-        port_bindings={
-            80: 12345,
-        }
+    }
     )
 
     try:
