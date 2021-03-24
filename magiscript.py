@@ -62,6 +62,8 @@ def run_dockerfile(b_env, arch, kver, kconfig):
                                                        name=container_name,
                                                        volumes=f'/{volume_name}',
                                                        host_config=binding_config,
+                                                       tty=False,
+                                                       stdin_open=False,
                                                        working_dir="/tuxml-kci")
     except APIError:
         # TODO do we really need to force remove here?
@@ -70,6 +72,8 @@ def run_dockerfile(b_env, arch, kver, kconfig):
                                                        name=container_name,
                                                        volumes=f'/{volume_name}',
                                                        host_config=binding_config,
+                                                       tty=False,
+                                                       stdin_open=False,
                                                        working_dir="/tuxml-kci")
 
     docker_client.api.start(container=container.get('Id'))
@@ -89,11 +93,20 @@ def run_dockerfile(b_env, arch, kver, kconfig):
 
     # command = "echo 'yo man' >> /proc/1/fd/1"
     # random_echo_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
-    # docker_client.api.exec_start(exec_id=random_echo_cmd, detach=True)
+    # docker_client.api.exec_start(exec_id=random_echo_cmd, detach=False, tty=True, stream=True)
+    #
 
-    command = f"python3 tuxml_kci.py -b {b_env} -k {kver} -a {arch} -c {kconfig}"
+    command = f"bash -c \"python3 tuxml_kci.py -b {b_env} -k {kver} -a {arch} -c {kconfig} > /proc/1/fd/1\""
     build_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
     docker_client.api.exec_start(exec_id=build_cmd, stream=True, detach=False)
+
+    stop_pattern= "Build of {b_env}_{arch} complete.".format(b_env=b_env, arch=arch)
+    for line in docker_client.api.logs(container=container_name, follow=True, stdout=True, stderr=True, stream=True, tail=5, timestamps=True):
+        print(line.decode('UTF-8').strip())
+        if stop_pattern in line.decode('UTF-8').strip():
+            break
+
+    docker_client.api.stop(container=container_name)
 
 if __name__ == '__main__':
 
