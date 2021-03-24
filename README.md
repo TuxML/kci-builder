@@ -4,7 +4,7 @@
 
 > Can take a while, but build a base Docker image that will be used for specific building environment images
 > 
-> `sh build.sh` 
+> `docker build -t kci_base:latest base/ --no-cache` 
 
 ### Dependencies 
 > Please make sure that you have pyyaml installed with 
