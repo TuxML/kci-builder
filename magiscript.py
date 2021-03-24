@@ -3,8 +3,7 @@ import os
 import yaml
 import argparse
 import docker
-from docker import utils, types
-from docker.errors import ContainerError, APIError
+from docker.errors import APIError
 
 volume_name = "shared_volume"
 dependencies_data = {}
@@ -30,7 +29,6 @@ def build_image(b_env, arch):
     except OSError as err:
         if err.errno != errno.EEXIST:
             print(err)
-    pass
 
     container_name = f"tuxml-kci-{b_env}_{arch}"
     print(f"Building image for {container_name}")
@@ -56,10 +54,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
     binding_config = docker_client.api.create_host_config(binds={f"{local_shared_volume}/": {
         'bind': f"/{volume_name}",
         'mode': 'rw'}
-    },
-        port_bindings={
-            80: 12345,
-        }
+    }
     )
 
     try:
@@ -67,7 +62,9 @@ def run_dockerfile(b_env, arch, kver, kconfig):
                                                        name=container_name,
                                                        volumes=f'/{volume_name}',
                                                        host_config=binding_config,
-                                                       working_dir="/Tuxml")
+                                                       tty=False,
+                                                       stdin_open=False,
+                                                       working_dir="/tuxml-kci")
     except APIError:
         # TODO do we really need to force remove here?
         docker_client.api.remove_container(container=container_name, force=True)
@@ -75,7 +72,9 @@ def run_dockerfile(b_env, arch, kver, kconfig):
                                                        name=container_name,
                                                        volumes=f'/{volume_name}',
                                                        host_config=binding_config,
-                                                       working_dir="/Tuxml")
+                                                       tty=False,
+                                                       stdin_open=False,
+                                                       working_dir="/tuxml-kci")
 
     docker_client.api.start(container=container.get('Id'))
 
@@ -94,13 +93,20 @@ def run_dockerfile(b_env, arch, kver, kconfig):
 
     # command = "echo 'yo man' >> /proc/1/fd/1"
     # random_echo_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
-    # docker_client.api.exec_start(exec_id=random_echo_cmd, detach=True)
+    # docker_client.api.exec_start(exec_id=random_echo_cmd, detach=False, tty=True, stream=True)
+    #
 
-    command = f"python3 tuxml_kci.py -b {b_env} -k {kver} -a {arch} -c {kconfig}"
+    command = f"bash -c \"python3 tuxml_kci.py -b {b_env} -k {kver} -a {arch} -c {kconfig} > /proc/1/fd/1\""
     build_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
     docker_client.api.exec_start(exec_id=build_cmd, stream=True, detach=False)
 
+    stop_pattern= "Build of {b_env}_{arch} complete.".format(b_env=b_env, arch=arch)
+    for line in docker_client.api.logs(container=container_name, follow=True, stdout=True, stderr=True, stream=True, tail=5, timestamps=True):
+        print(line.decode('UTF-8').strip())
+        if stop_pattern in line.decode('UTF-8').strip():
+            break
 
+    docker_client.api.stop(container=container_name)
 
 if __name__ == '__main__':
 
@@ -164,6 +170,8 @@ if __name__ == '__main__':
                     print(f"Image for {build_image_name} exists already.")
                     print(f"The old image will be deleted and a new version will be created.")
                 build_image(args['build_env'], args['arch'])
+
             if args.get('which') == 'run':
-                print(f"Running container {build_image_name}...")
+                print(f"Starting background build inside '{build_image_name}' container.")
+                print(f"Results will be available shortly in the following path -> '{volume_name}/{build_image_name}'")
                 run_dockerfile(args['build_env'], args['arch'], args['kversion'], args['config'])
