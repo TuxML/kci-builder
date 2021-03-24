@@ -3,8 +3,7 @@ import os
 import yaml
 import argparse
 import docker
-from docker import utils, types
-from docker.errors import ContainerError, APIError
+from docker.errors import APIError
 
 volume_name = "shared_volume"
 dependencies_data = {}
@@ -30,7 +29,6 @@ def build_image(b_env, arch):
     except OSError as err:
         if err.errno != errno.EEXIST:
             print(err)
-    pass
 
     container_name = f"tuxml-kci-{b_env}_{arch}"
     print(f"Building image for {container_name}")
@@ -100,8 +98,6 @@ def run_dockerfile(b_env, arch, kver, kconfig):
     build_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
     docker_client.api.exec_start(exec_id=build_cmd, stream=True, detach=False)
 
-
-
 if __name__ == '__main__':
 
     print("Starting...")
@@ -164,6 +160,8 @@ if __name__ == '__main__':
                     print(f"Image for {build_image_name} exists already.")
                     print(f"The old image will be deleted and a new version will be created.")
                 build_image(args['build_env'], args['arch'])
+
             if args.get('which') == 'run':
-                print(f"Running container {build_image_name}...")
+                print(f"Starting background build inside '{build_image_name}' container.")
+                print(f"Results will be available shortly in the following path -> '{volume_name}/{build_image_name}'")
                 run_dockerfile(args['build_env'], args['arch'], args['kversion'], args['config'])

@@ -7,9 +7,13 @@
 > `docker build -t kci_base:latest base/ --no-cache` 
 
 ### Dependencies 
-> Please make sure that you have pyyaml installed with 
+> Please make sure that you have pyyaml and docker-py installed with 
 > 
 > `pip3 install pyyaml`
+> 
+> `pip3 install docker`
+> 
+
 ## Script usage
 
 > 1) **build the kernel image :** ``python3 magiscript.py build [-h] -b BUILD_ENV -a ARCH``
