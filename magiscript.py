@@ -43,7 +43,7 @@ def create_dockerfile(path, b_env, arch):
     with open(path + "/Dockerfile", mode="w") as df:
         df.write("FROM kci_base\n")
         df.write(dependencies_data['arch'][arch].format(b_env_ver=b_env_ver))
-        df.write("RUN git clone https://github.com/TuxML/tuxml-kci.git\n")
+        df.write("RUN git clone https://github.com/bibi14010/Tuxml.git\n")
 
 
 def run_dockerfile(b_env, arch, kver, kconfig):
@@ -67,7 +67,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
                                                        name=container_name,
                                                        volumes=f'/{volume_name}',
                                                        host_config=binding_config,
-                                                       working_dir="/tuxml-kci")
+                                                       working_dir="/Tuxml")
     except APIError:
         # TODO do we really need to force remove here?
         docker_client.api.remove_container(container=container_name, force=True)
@@ -75,7 +75,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
                                                        name=container_name,
                                                        volumes=f'/{volume_name}',
                                                        host_config=binding_config,
-                                                       working_dir="/tuxml-kci")
+                                                       working_dir="/Tuxml")
 
     docker_client.api.start(container=container.get('Id'))
 

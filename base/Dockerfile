@@ -41,8 +41,10 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     python3-jinja2 \
     python3-keyring \
     python3-pyelftools \
+    python3-setuptools \
     python3-requests \
-    python3-yaml
+    python3-yaml \
+    python3-pip
 
 # Taken from - https://docs.docker.com/engine/examples/running_ssh_service/#environment-variables
 RUN mkdir /var/run/sshd
@@ -64,6 +66,6 @@ RUN echo 'admin:password' | chpasswd
 # Upon start, run ssh daemon
 CMD ["/usr/sbin/sshd", "-D"]
 
-RUN git clone https://github.com/kernelci/kernelci-core.git
+RUN python3 -m pip install kernelci
 
 RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list
