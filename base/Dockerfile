@@ -54,8 +54,8 @@ RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so
 ENV NOTVISIBLE "in users profile"
 RUN echo "export VISIBLE=now" >> /etc/profile
 
-# expose 22 for ssh server. 7777 for gdb server.
-EXPOSE 22 7777
+# expose 22 for ssh server. 7777 for gdb server. 80 for lava communications.
+EXPOSE 22 80 7777
 
 # Create adminuser with password 'password'
 RUN useradd -ms /bin/bash admin
