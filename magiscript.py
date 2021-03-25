@@ -4,8 +4,11 @@ import yaml
 import argparse
 import docker
 from docker.errors import APIError
+import subprocess
+
 
 volume_name = "shared_volume"
+config_path = "configs"
 dependencies_data = {}
 docker_client = docker.from_env()
 
@@ -136,10 +139,23 @@ if __name__ == '__main__':
     parser_run.add_argument("-k", "--kversion", required=True, help="Select a linux kernel version. A tarball will be "
                                                                     "downloaded (and cached) and used for building the "
                                                                     "kernel.")
-    parser_run.add_argument("-c", "--config", required=True, help="Select the configuration to be used during the "
-                                                                  "compilation of the kernel.")
+    #parser_run.add_argument("-c", "--config", required=True, help="Select the configuration to be used during the "
+    #                                                              "compilation of the kernel.")
+    second_subparser = parser_run.add_subparsers()
+    parser_label = second_subparser.add_parser("label")
+    parser_label.set_defaults(which="label")
+    parser_label.add_argument("-l", "--label", required=True,
+                              help="Select the label of the configuration to be used during the compilation of the "
+                                   "kernel.")
+
+    parser_config = second_subparser.add_parser("config")
+    parser_config.set_defaults(which="config")
+    parser_config.add_argument("-c", "--config", required=True,
+                               help="Select the path of the configuration file to be used during the compilation of "
+                                    "the kernel.")
 
     args = vars(parser.parse_args())
+
 
     # Check if the base image exists
     if not docker_client.api.images(name="kci_base"):
@@ -157,6 +173,7 @@ if __name__ == '__main__':
             # Create shared directory between containers. This will used to store generated Dockerfiles and output data
             try:
                 os.makedirs(name=volume_name, exist_ok=True)
+                os.makedirs(name=volume_name+"/"+config_path, exist_ok=True)
             except OSError as err:
                 print(err)
 
@@ -171,7 +188,12 @@ if __name__ == '__main__':
                     print(f"The old image will be deleted and a new version will be created.")
                 build_image(args['build_env'], args['arch'])
 
-            if args.get('which') == 'run':
+            if args.get('which') == 'label':
                 print(f"Starting background build inside '{build_image_name}' container.")
                 print(f"Results will be available shortly in the following path -> '{volume_name}/{build_image_name}'")
-                run_dockerfile(args['build_env'], args['arch'], args['kversion'], args['config'])
+                run_dockerfile(args['build_env'], args['arch'], args['kversion'], args['label'])
+
+            if args.get('which') == "config":
+                print(f"Moving {args['config']} to {volume_name}/{config_path}/{args['build_env']}_{args['arch']}.config")
+                subprocess.call(f"cp {args['config']} ./{volume_name}/{config_path}/{args['build_env']}_{args['arch']}.config", shell=True)
+                run_dockerfile(args['build_env'], args['arch'], args['kversion'], f"./{volume_name}/{config_path}/{args['build_env']}_{args['arch']}.config")
