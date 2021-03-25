@@ -18,7 +18,7 @@
 
 > 1) **build the kernel image :** ``python3 magiscript.py build [-h] -b BUILD_ENV -a ARCH``
 > 
-> 2) **run compilation in a container :** ``python3 magiscript.py run [-h] -b BUILD_ENV -a ARCH -c CONFIG -k KVERSION``  
+> 2) **run compilation in a container :** ``python3 magiscript.py run [-h] -b BUILD_ENV -a ARCH {label -l; config -c} CONFIG -k KVERSION``  
 > 
 > Arguments details : 
 >   
@@ -32,7 +32,13 @@
 >
 > `-a` ARCH or `--arch` ARCH, must be used with a value to specify the architecture for the build. Available architectures are : x86_64, arm, arm64, mips and riscv64
 > 
-> `-c` CONFIG ir `--config` CONFIG, will specify wich type of configuration will be used for the compilation. For example : tinyconfig or defconfig.
+> chose `label` if you want to specify a particular known configuration
+>
+> chose `config` if you want to use your own configuration file
+> 
+> `-l` LABEL or `--label` CONFIG, will specify wich type of configuration will be used for the compilation. For example : tinyconfig or defconfig.
+> 
+> `-c` CONFIG or `--config` CONFIG, will take your own configuration file . For example : /myConfigurationFiles/test_config.config 
 > 
 > `k` KVERSION or `--kversion` KVERSION, must be used with a value to specify the version of the kernel to be downloaded and used for the build
 
@@ -40,7 +46,7 @@
 
 > ``python3 magiscript.py build -b gcc-8 -a x86_64``
 > 
-> ``python3 magiscript.py run -b gcc-8 -a x86_64 -k 4.13 -c tinyconfig``
+> ``python3 magiscript.py run -b gcc-8 -a x86_64 -k 4.13 label -l tinyconfig``
 
 ### Remarks
 > If the dockerfile for a specific configuration already exists, it will not be created again
