@@ -181,7 +181,7 @@ if __name__ == '__main__':
         print("This operation must be done only once. Once the base image is available in your system, you won't need to be rebuilt.")
     else:
         print("image: kci_base found...")
-        # Populate local dictionary with dependencies list that needs to be written in the Dockerfile
+        # Populate local dictionary with the list of dependencies that need to be written in the Dockerfile
         get_dependencies()
 
         # Check if the building environment is supported, otherwise stop execution
