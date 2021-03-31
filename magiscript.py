@@ -82,15 +82,15 @@ def run_dockerfile(b_env, arch, kver, kconfig):
     docker_client.api.start(container=container.get('Id'))
 
     # Update local repo of tuxml-kci and build a kernel - USED DURING TEST PHASE SO THAT 'kha_test' IS USED
-    command = "git checkout kha_test"
-    checkout_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
+    #command = "git checkout kha_test"
+    #checkout_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
 
     command = "git fetch"
     fetch_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
 
     command = "git pull"
     pull_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
-    docker_client.api.exec_start(exec_id=checkout_cmd)
+    #docker_client.api.exec_start(exec_id=checkout_cmd)
     docker_client.api.exec_start(exec_id=fetch_cmd)
     docker_client.api.exec_start(exec_id=pull_cmd)
 
