@@ -1,0 +1,27 @@
+masters:
+  - name: master1
+    host: local
+    users:
+    - name: admin
+      token: 8ec4c0aeaf934ed1dce98cdda800c81c
+      password: admin
+      superuser: yes
+      staff: yes
+    tokens:
+    - username: admin
+      token: 188e93a7a2cc624d28687c5d0399468f
+      description: no description
+
+slaves:
+  - name: lab-slave-0
+    host: local
+    remote_master: master1
+    remote_user: admin
+
+storages:
+  - name: storage
+    host: local
+    
+boards:
+  - name: qemu-01
+    type: qemu

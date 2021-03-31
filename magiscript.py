@@ -51,6 +51,20 @@ def run_dockerfile(b_env, arch, kver, kconfig):
     local_shared_volume = os.getcwd() + "/" + volume_name
     container_name = f"tuxml-kci-{b_env}_{arch}"
 
+    # If a lava-lab is not running then launch one
+
+    if  (docker_client.containers.get("local_master1_1").status == 'running') == True:
+        print("A Lava instance is already running")
+    else:
+        print("No lava running...")
+        os.system("rm -rf lava_kci/output")
+        back = os.getcwd()
+        os.chdir("lava_kci/")
+        os.system("python3 lavalab-gen.py")
+        os.chdir(back)
+        os.system("docker-compose -f lava_kci/output/local/docker-compose.yml up -d")
+        print("Lava now launch.")
+
     # Start a container that will launch kernel building. Destroy content when exiting.
     # Prepare configuration environment and create a container
 
@@ -80,6 +94,9 @@ def run_dockerfile(b_env, arch, kver, kconfig):
                                                        working_dir="/tuxml-kci")
 
     docker_client.api.start(container=container.get('Id'))
+
+    # Connect the container to the Lava network
+    os.system(f"docker network connect local_default {container.get('Id')}")
 
     # Update local repo of tuxml-kci and build a kernel - USED DURING TEST PHASE SO THAT 'kha_test' IS USED
     command = "git checkout kha_test"
