@@ -32,8 +32,6 @@
 >
 > `-a` ARCH or `--arch` ARCH, must be used with a value to specify the architecture for the build. Available architectures are : x86_64, arm, arm64, mips and riscv64
 > 
-> chose `label` if you want to specify a particular known configuration
-> 
 > `-c` CONFIG or `--config` CONFIG, will take your own configuration file . For example : /myConfigurationFiles/test_config.config 
 > 
 > `k` KVERSION or `--kversion` KVERSION, must be used with a value to specify the version of the kernel to be downloaded and used for the build
