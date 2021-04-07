@@ -194,6 +194,5 @@ if __name__ == '__main__':
                 run_dockerfile(args['build_env'], args['arch'], args['kversion'], args['label'])
 
             if args.get('which') == "config":
-                print(f"Moving {args['config']} to {volume_name}/{config_path}/{args['build_env']}_{args['arch']}.config")
                 subprocess.call(f"cp {args['config']} ./{volume_name}/{config_path}/{args['build_env']}_{args['arch']}.config", shell=True)
                 run_dockerfile(args['build_env'], args['arch'], args['kversion'], f"./{volume_name}/{config_path}/{args['build_env']}_{args['arch']}.config")
