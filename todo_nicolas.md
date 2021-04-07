@@ -36,27 +36,3 @@ Manque :
   - git.url
    to submit
 
-```python
-    # If a lava-lab is not running then launch one
-
-    if  (docker_client.containers.get("local_master1_1").status == 'running') == True:
-        print("A Lava instance is already running")
-    else:
-        print("No lava running...")
-        os.system("rm -rf lava_kci/output")
-        back = os.getcwd()
-        os.chdir("lava_kci/")
-        os.system("python3 lavalab-gen.py")
-        os.chdir(back)
-        os.system("docker-compose -f lava_kci/output/local/docker-compose.yml up -d")
-        print("Lava now launch.")
-```
-
-After get container ID
-```python
-# Connect the container to the Lava network
-    os.system(f"docker network connect local_default {container.get('Id')}")
-```
-
-
-os.system('docker ps --filter status=running | grep "local_master1_1"') != None

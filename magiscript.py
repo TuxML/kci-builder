@@ -109,7 +109,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
     os.system(f"docker network connect local_default {container.get('Id')}")
 
     # Update local repo of tuxml-kci and build a kernel - USED DURING TEST PHASE SO THAT 'kha_test' IS USED
-    command = "git checkout kha_test"
+    command = "git checkout lava"
     checkout_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
 
     command = "git fetch"
@@ -136,7 +136,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
         if stop_pattern in line.decode('UTF-8').strip():
             break
 
-    docker_client.api.stop(container=container_name)
+    #docker_client.api.stop(container=container_name)
 
 if __name__ == '__main__':
 
