@@ -37,9 +37,6 @@ Manque :
    to submit
 
 ```python
-local_shared_volume = os.getcwd() + "/" + volume_name
-    container_name = f"tuxml-kci-{b_env}_{arch}"
-
     # If a lava-lab is not running then launch one
 
     if  (docker_client.containers.get("local_master1_1").status == 'running') == True:
@@ -60,3 +57,6 @@ After get container ID
 # Connect the container to the Lava network
     os.system(f"docker network connect local_default {container.get('Id')}")
 ```
+
+
+os.system('docker ps --filter status=running | grep "local_master1_1"') != None
