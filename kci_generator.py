@@ -4,6 +4,7 @@ import yaml
 import argparse
 import docker
 from docker.errors import APIError
+from apiManager import APIManager
 
 volume_name = "shared_volume"
 dependencies_data = {}
@@ -42,7 +43,7 @@ def create_dockerfile(path, b_env, arch):
         df.write("FROM kci_base\n")
         df.write(dependencies_data['arch'][arch].format(b_env_ver=b_env_ver))
         df.write("RUN git clone https://github.com/TuxML/tuxml-kci.git\n")
-
+        df.write("RUN git clone https://github.com/TuxML/tuxml.git")
 
 def run_dockerfile(b_env, arch, kver, kconfig):
     local_shared_volume = os.getcwd() + "/" + volume_name
@@ -91,11 +92,6 @@ def run_dockerfile(b_env, arch, kver, kconfig):
     docker_client.api.exec_start(exec_id=fetch_cmd)
     docker_client.api.exec_start(exec_id=pull_cmd)
 
-    # command = "echo 'yo man' >> /proc/1/fd/1"
-    # random_echo_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
-    # docker_client.api.exec_start(exec_id=random_echo_cmd, detach=False, tty=True, stream=True)
-    #
-
     command = f"bash -c \"python3 tuxml_kci.py -b {b_env} -k {kver} -a {arch} -c {kconfig} > /proc/1/fd/1\""
     build_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
     docker_client.api.exec_start(exec_id=build_cmd, stream=True, detach=False)
@@ -107,6 +103,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
             break
 
     docker_client.api.stop(container=container_name)
+
 
 if __name__ == '__main__':
 
@@ -175,3 +172,4 @@ if __name__ == '__main__':
                 print(f"Starting background build inside '{build_image_name}' container.")
                 print(f"Results will be available shortly in the following path -> '{volume_name}/{build_image_name}'")
                 run_dockerfile(args['build_env'], args['arch'], args['kversion'], args['config'])
+
