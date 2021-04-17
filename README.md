@@ -1,4 +1,4 @@
-# kci builder
+# kci generator
 
 ## Getting started
 
