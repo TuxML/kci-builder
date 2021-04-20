@@ -4,8 +4,12 @@ import yaml
 import argparse
 import docker
 from docker.errors import APIError
+<<<<<<< HEAD:magiscript.py
 import subprocess
 
+=======
+from apiManager import APIManager
+>>>>>>> 988eba6468a94dcf934f2e923d440ea12c177fef:kci_generator.py
 
 volume_name = "shared_volume"
 config_path = "configs"
@@ -67,7 +71,7 @@ def create_dockerfile(path, b_env, arch):
         df.write("FROM kci_base\n")
         df.write(dependencies_data['arch'][arch].format(b_env_ver=b_env_ver))
         df.write("RUN git clone https://github.com/TuxML/tuxml-kci.git\n")
-
+        df.write("RUN git clone https://github.com/TuxML/tuxml.git")
 
 def run_dockerfile(b_env, arch, kver, kconfig):
     local_shared_volume = os.getcwd() + "/" + volume_name
@@ -121,11 +125,6 @@ def run_dockerfile(b_env, arch, kver, kconfig):
     docker_client.api.exec_start(exec_id=fetch_cmd)
     docker_client.api.exec_start(exec_id=pull_cmd)
 
-    # command = "echo 'yo man' >> /proc/1/fd/1"
-    # random_echo_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
-    # docker_client.api.exec_start(exec_id=random_echo_cmd, detach=False, tty=True, stream=True)
-    #
-
     command = f"bash -c \"python3 tuxml_kci.py -b {b_env} -k {kver} -a {arch} -c {kconfig} > /proc/1/fd/1\""
     build_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
     docker_client.api.exec_start(exec_id=build_cmd, stream=True, detach=False)
@@ -137,6 +136,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
             break
 
     #docker_client.api.stop(container=container_name)
+
 
 if __name__ == '__main__':
 
@@ -189,6 +189,7 @@ if __name__ == '__main__':
 
     args = vars(parser.parse_args())
 
+<<<<<<< HEAD:magiscript.py
     if args.get('which') == 'lava':
         print("Starting LAVA docker...")
         lava_is_running(args['set_state'])
@@ -234,3 +235,40 @@ if __name__ == '__main__':
                     print(f"Moving {args['config']} to {volume_name}/{config_path}/{args['build_env']}_{args['arch']}.config")
                     subprocess.call(f"cp {args['config']} ./{volume_name}/{config_path}/{args['build_env']}_{args['arch']}.config", shell=True)
                     run_dockerfile(args['build_env'], args['arch'], args['kversion'], f"./{volume_name}/{config_path}/{args['build_env']}_{args['arch']}.config")
+=======
+    # Check if the base image exists
+    if not docker_client.api.images(name="kci_base"):
+        print("The base image is missing.")
+        print("Please build the base image first with -->> docker build -t kci_base:latest base/ --no-cache")
+        print("This operation must be done only once. Once the base image is available in your system, you won't need to be rebuilt.")
+    else:
+        print("image: kci_base found...")
+        # Populate local dictionary with dependencies list that needs to be written in the Dockerfile
+        get_dependencies()
+
+        # Check if the building environment is supported, otherwise stop execution
+        if args['build_env'].split('-')[0] in dependencies_data['supported_envs']:
+
+            # Create shared directory between containers. This will used to store generated Dockerfiles and output data
+            try:
+                os.makedirs(name=volume_name, exist_ok=True)
+            except OSError as err:
+                print(err)
+
+            # If the directory is already existing, check if it contains already the image that we need to build
+            dir_content = os.listdir(volume_name)
+            build_image_name = "{b_env}_{arch}".format(b_env=args['build_env'], arch=args['arch'])
+
+            # Test which sub command has been entered and act accordingly
+            if args.get('which') == 'build':
+                if docker_client.api.images(name=build_image_name):
+                    print(f"Image for {build_image_name} exists already.")
+                    print(f"The old image will be deleted and a new version will be created.")
+                build_image(args['build_env'], args['arch'])
+
+            if args.get('which') == 'run':
+                print(f"Starting background build inside '{build_image_name}' container.")
+                print(f"Results will be available shortly in the following path -> '{volume_name}/{build_image_name}'")
+                run_dockerfile(args['build_env'], args['arch'], args['kversion'], args['config'])
+
+>>>>>>> 988eba6468a94dcf934f2e923d440ea12c177fef:kci_generator.py
