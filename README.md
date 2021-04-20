@@ -1,4 +1,4 @@
-# kci builder
+# kci generator
 
 ## Getting started
 
@@ -16,9 +16,9 @@
 
 ## Script usage
 
-> 1) **build the kernel image :** ``python3 magiscript.py build [-h] -b BUILD_ENV -a ARCH``
+> 1) **build the kernel image :** ``python3 kci_generator.py build [-h] -b BUILD_ENV -a ARCH``
 > 
-> 2) **run compilation in a container :** ``python3 magiscript.py run [-h] -b BUILD_ENV -a ARCH -c CONFIG -k KVERSION``  
+> 2) **run compilation in a container :** ``python3 kci_generator.py run [-h] -b BUILD_ENV -a ARCH -c CONFIG -k KVERSION``  
 > 
 > Arguments details : 
 >   
@@ -38,9 +38,9 @@
 
 ## Example
 
-> ``python3 magiscript.py build -b gcc-8 -a x86_64``
+> ``python3 kci_generator.py build -b gcc-8 -a x86_64``
 > 
-> ``python3 magiscript.py run -b gcc-8 -a x86_64 -k 4.13 -c tinyconfig``
+> ``python3 kci_generator.py run -b gcc-8 -a x86_64 -k 4.13 -c tinyconfig``
 
 ### Remarks
 > If the dockerfile for a specific configuration already exists, it will not be created again
