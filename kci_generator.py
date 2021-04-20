@@ -4,15 +4,10 @@ import yaml
 import argparse
 import docker
 from docker.errors import APIError
-<<<<<<< HEAD:magiscript.py
+#from apiManager import APIManager
 import subprocess
 
-=======
-from apiManager import APIManager
->>>>>>> 988eba6468a94dcf934f2e923d440ea12c177fef:kci_generator.py
-
 volume_name = "shared_volume"
-config_path = "configs"
 dependencies_data = {}
 docker_client = docker.from_env()
 
@@ -44,7 +39,6 @@ def lava_is_running(state):
         if  master_state or slave_state or storage_state:
             os.system("docker-compose -f lava_kci/output/local/docker-compose.yml down")
 
-    
 def build_image(b_env, arch):
     # create a directory containing the Dockerfile (this same directory will contain future metadata)
     path = f"{volume_name}/{b_env}_{arch}"
@@ -71,7 +65,6 @@ def create_dockerfile(path, b_env, arch):
         df.write("FROM kci_base\n")
         df.write(dependencies_data['arch'][arch].format(b_env_ver=b_env_ver))
         df.write("RUN git clone https://github.com/TuxML/tuxml-kci.git\n")
-        df.write("RUN git clone https://github.com/TuxML/tuxml.git")
 
 def run_dockerfile(b_env, arch, kver, kconfig):
     local_shared_volume = os.getcwd() + "/" + volume_name
@@ -81,7 +74,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
     # Prepare configuration environment and create a container
 
     lava_is_running('up')
-    
+
     binding_config = docker_client.api.create_host_config(binds={f"{local_shared_volume}/": {
         'bind': f"/{volume_name}",
         'mode': 'rw'}
@@ -172,29 +165,16 @@ if __name__ == '__main__':
     parser_run.add_argument("-k", "--kversion", required=True, help="Select a linux kernel version. A tarball will be "
                                                                     "downloaded (and cached) and used for building the "
                                                                     "kernel.")
-    #parser_run.add_argument("-c", "--config", required=True, help="Select the configuration to be used during the "
-    #                                                              "compilation of the kernel.")
-    second_subparser = parser_run.add_subparsers()
-    parser_label = second_subparser.add_parser("label")
-    parser_label.set_defaults(which="label")
-    parser_label.add_argument("-l", "--label", required=True,
-                              help="Select the label of the configuration to be used during the compilation of the "
-                                   "kernel.")
-
-    parser_config = second_subparser.add_parser("config")
-    parser_config.set_defaults(which="config")
-    parser_config.add_argument("-c", "--config", required=True,
-                               help="Select the path of the configuration file to be used during the compilation of "
-                                    "the kernel.")
+    parser_run.add_argument("-c", "--config", required=True, help="Select the configuration to be used during the "
+                                                                  "compilation of the kernel.")
 
     args = vars(parser.parse_args())
 
-<<<<<<< HEAD:magiscript.py
     if args.get('which') == 'lava':
         print("Starting LAVA docker...")
         lava_is_running(args['set_state'])
         print("Done.")
-    else:    
+    else:
         # Check if the base image exists
         if not docker_client.api.images(name="kci_base"):
             print("The base image is missing.")
@@ -211,7 +191,6 @@ if __name__ == '__main__':
                 # Create shared directory between containers. This will used to store generated Dockerfiles and output data
                 try:
                     os.makedirs(name=volume_name, exist_ok=True)
-                    os.makedirs(name=volume_name+"/"+config_path, exist_ok=True)
                 except OSError as err:
                     print(err)
 
@@ -219,56 +198,15 @@ if __name__ == '__main__':
                 dir_content = os.listdir(volume_name)
                 build_image_name = "{b_env}_{arch}".format(b_env=args['build_env'], arch=args['arch'])
 
-                # Test which sub command has been entered and act accordingly                
+                # Test which sub command has been entered and act accordingly
                 if args.get('which') == 'build':
                     if docker_client.api.images(name=build_image_name):
                         print(f"Image for {build_image_name} exists already.")
                         print(f"The old image will be deleted and a new version will be created.")
                     build_image(args['build_env'], args['arch'])
 
-                if args.get('which') == 'label':
+                if args.get('which') == 'run':
                     print(f"Starting background build inside '{build_image_name}' container.")
                     print(f"Results will be available shortly in the following path -> '{volume_name}/{build_image_name}'")
-                    run_dockerfile(args['build_env'], args['arch'], args['kversion'], args['label'])
+                    run_dockerfile(args['build_env'], args['arch'], args['kversion'], args['config'])
 
-                if args.get('which') == "config":
-                    print(f"Moving {args['config']} to {volume_name}/{config_path}/{args['build_env']}_{args['arch']}.config")
-                    subprocess.call(f"cp {args['config']} ./{volume_name}/{config_path}/{args['build_env']}_{args['arch']}.config", shell=True)
-                    run_dockerfile(args['build_env'], args['arch'], args['kversion'], f"./{volume_name}/{config_path}/{args['build_env']}_{args['arch']}.config")
-=======
-    # Check if the base image exists
-    if not docker_client.api.images(name="kci_base"):
-        print("The base image is missing.")
-        print("Please build the base image first with -->> docker build -t kci_base:latest base/ --no-cache")
-        print("This operation must be done only once. Once the base image is available in your system, you won't need to be rebuilt.")
-    else:
-        print("image: kci_base found...")
-        # Populate local dictionary with dependencies list that needs to be written in the Dockerfile
-        get_dependencies()
-
-        # Check if the building environment is supported, otherwise stop execution
-        if args['build_env'].split('-')[0] in dependencies_data['supported_envs']:
-
-            # Create shared directory between containers. This will used to store generated Dockerfiles and output data
-            try:
-                os.makedirs(name=volume_name, exist_ok=True)
-            except OSError as err:
-                print(err)
-
-            # If the directory is already existing, check if it contains already the image that we need to build
-            dir_content = os.listdir(volume_name)
-            build_image_name = "{b_env}_{arch}".format(b_env=args['build_env'], arch=args['arch'])
-
-            # Test which sub command has been entered and act accordingly
-            if args.get('which') == 'build':
-                if docker_client.api.images(name=build_image_name):
-                    print(f"Image for {build_image_name} exists already.")
-                    print(f"The old image will be deleted and a new version will be created.")
-                build_image(args['build_env'], args['arch'])
-
-            if args.get('which') == 'run':
-                print(f"Starting background build inside '{build_image_name}' container.")
-                print(f"Results will be available shortly in the following path -> '{volume_name}/{build_image_name}'")
-                run_dockerfile(args['build_env'], args['arch'], args['kversion'], args['config'])
-
->>>>>>> 988eba6468a94dcf934f2e923d440ea12c177fef:kci_generator.py
