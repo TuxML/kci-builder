@@ -4,7 +4,7 @@ import yaml
 import argparse
 import docker
 from docker.errors import APIError
-from apiManager import APIManager
+# from apiManager import APIManager
 
 volume_name = "shared_volume"
 dependencies_data = {}
@@ -43,7 +43,7 @@ def create_dockerfile(path, b_env, arch):
         df.write("FROM kci_base\n")
         df.write(dependencies_data['arch'][arch].format(b_env_ver=b_env_ver))
         df.write("RUN git clone https://github.com/TuxML/tuxml-kci.git\n")
-        df.write("RUN git clone https://github.com/TuxML/tuxml.git")
+        df.write("RUN git clone https://github.com/kernelci/kernelci-core.git")
 
 def run_dockerfile(b_env, arch, kver, kconfig):
     local_shared_volume = os.getcwd() + "/" + volume_name
@@ -88,7 +88,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
 
     command = "git pull"
     pull_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
-    docker_client.api.exec_start(exec_id=checkout_cmd)
+    # docker_client.api.exec_start(exec_id=checkout_cmd)
     docker_client.api.exec_start(exec_id=fetch_cmd)
     docker_client.api.exec_start(exec_id=pull_cmd)
 
