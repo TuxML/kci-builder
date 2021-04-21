@@ -79,6 +79,9 @@ def run_dockerfile(b_env, arch, kver, kconfig):
 
     docker_client.api.start(container=container.get('Id'))
 
+<<<<<<< HEAD
+    # Create a command that will launch the script tuxml_kci.py
+=======
     # Update local repo of tuxml-kci and build a kernel - USED DURING TEST PHASE SO THAT 'kha_test' IS USED
     #command = "git checkout kha_test"
     #checkout_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
@@ -98,10 +101,14 @@ def run_dockerfile(b_env, arch, kver, kconfig):
     # docker_client.api.exec_start(exec_id=random_echo_cmd, detach=False, tty=True, stream=True)
     #
 
+<<<<<<< Updated upstream
+=======
+>>>>>>> 999d86d6f0fa58a470ed17201eff81f648672f31
+>>>>>>> Stashed changes
     command = f"bash -c \"python3 tuxml_kci.py -b {b_env} -k {kver} -a {arch} -c {kconfig} > /proc/1/fd/1\""
     build_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
     docker_client.api.exec_start(exec_id=build_cmd, stream=True, detach=False)
-
+    
     stop_pattern= "Build of {b_env}_{arch} complete.".format(b_env=b_env, arch=arch)
     for line in docker_client.api.logs(container=container_name, follow=True, stdout=True, stderr=True, stream=True, tail=5, timestamps=True):
         print(line.decode('UTF-8').strip())

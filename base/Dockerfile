@@ -3,7 +3,6 @@ FROM debian:buster
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install only necessary libraries
-# Docker for jenkins really needs procps otherwise the jenkins side fails
 RUN apt-get update && apt-get install --no-install-recommends -y procps
 
 # SSL / HTTPS support
@@ -67,5 +66,9 @@ RUN echo 'admin:password' | chpasswd
 CMD ["/usr/sbin/sshd", "-D"]
 
 RUN python3 -m pip install kernelci
+
+RUN python3 -m pip install psutil
+
+RUN python3 -m pip install distro
 
 RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list
