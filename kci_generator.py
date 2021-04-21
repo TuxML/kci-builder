@@ -82,24 +82,17 @@ def run_dockerfile(b_env, arch, kver, kconfig):
 <<<<<<< HEAD
     # Create a command that will launch the script tuxml_kci.py
 =======
-    # Update local repo of tuxml-kci and build a kernel - USED DURING TEST PHASE SO THAT 'kha_test' IS USED
-    #command = "git checkout kha_test"
-    #checkout_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
+    # Update local repo of tuxml-kci and build a kernel - 
 
     command = "git fetch"
     fetch_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
 
     command = "git pull"
     pull_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
-    # docker_client.api.exec_start(exec_id=checkout_cmd)
-    #docker_client.api.exec_start(exec_id=checkout_cmd)
+
     docker_client.api.exec_start(exec_id=fetch_cmd)
     docker_client.api.exec_start(exec_id=pull_cmd)
 
-    # command = "echo 'yo man' >> /proc/1/fd/1"
-    # random_echo_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
-    # docker_client.api.exec_start(exec_id=random_echo_cmd, detach=False, tty=True, stream=True)
-    #
 
 <<<<<<< Updated upstream
 =======
