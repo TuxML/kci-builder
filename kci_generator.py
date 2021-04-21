@@ -79,10 +79,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
 
     docker_client.api.start(container=container.get('Id'))
 
-<<<<<<< HEAD
-    # Create a command that will launch the script tuxml_kci.py
-=======
-    # Update local repo of tuxml-kci and build a kernel - 
+    # Update local repo of tuxml-kci and build a kernel -
 
     command = "git fetch"
     fetch_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
@@ -94,10 +91,8 @@ def run_dockerfile(b_env, arch, kver, kconfig):
     docker_client.api.exec_start(exec_id=pull_cmd)
 
 
-<<<<<<< Updated upstream
-=======
->>>>>>> 999d86d6f0fa58a470ed17201eff81f648672f31
->>>>>>> Stashed changes
+
+    # Create a command that will launch the script tuxml_kci.py
     command = f"bash -c \"python3 tuxml_kci.py -b {b_env} -k {kver} -a {arch} -c {kconfig} > /proc/1/fd/1\""
     build_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
     docker_client.api.exec_start(exec_id=build_cmd, stream=True, detach=False)
