@@ -52,4 +52,6 @@ RUN pip3 install psutil
 
 RUN pip3 install distro
 
+RUN pip3 install kernelci
 RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list
+

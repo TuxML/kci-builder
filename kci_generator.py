@@ -4,7 +4,6 @@ import yaml
 import argparse
 import docker
 from docker.errors import APIError
-# from apiManager import APIManager
 
 volume_name = "shared_volume"
 dependencies_data = {}
@@ -20,7 +19,6 @@ def get_dependencies():
 def build_image(b_env, arch):
     # create a directory containing the Dockerfile (this same directory will contain future metadata)
     path = f"{volume_name}/{b_env}_{arch}"
-
     try:
         # All newly created folders will be inside $volume_name
         os.mkdir(path)
@@ -46,7 +44,8 @@ def create_dockerfile(path, b_env, arch):
         df.write("RUN git clone https://github.com/kernelci/kernelci-core.git")
 
 def run_dockerfile(b_env, arch, kver, kconfig):
-    local_shared_volume = os.getcwd() + "/" + volume_name
+    local_shared_volume = os.path.join(os.getcwd(), volume_name)
+
     container_name = f"tuxml-kci-{b_env}_{arch}"
 
     # Start a container that will launch kernel building. Destroy content when exiting.
@@ -60,12 +59,13 @@ def run_dockerfile(b_env, arch, kver, kconfig):
 
     try:
         container = docker_client.api.create_container(image=container_name,
-                                                       name=container_name,
-                                                       volumes=f'/{volume_name}',
-                                                       host_config=binding_config,
-                                                       tty=False,
-                                                       stdin_open=False,
-                                                       working_dir="/tuxml-kci")
+                                                   name=container_name,
+                                                   volumes=f'/{volume_name}',
+                                                   host_config=binding_config,
+                                                   tty=False,
+                                                   stdin_open=True,
+                                                   working_dir="/tuxml-kci")
+
     except APIError:
         # TODO do we really need to force remove here?
         docker_client.api.remove_container(container=container_name, force=True)
@@ -78,7 +78,6 @@ def run_dockerfile(b_env, arch, kver, kconfig):
                                                        working_dir="/tuxml-kci")
 
     docker_client.api.start(container=container.get('Id'))
-
     # Update local repo of tuxml-kci and build a kernel -
 
     command = "git fetch"
@@ -96,7 +95,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
     command = f"bash -c \"python3 tuxml_kci.py -b {b_env} -k {kver} -a {arch} -c {kconfig} > /proc/1/fd/1\""
     build_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
     docker_client.api.exec_start(exec_id=build_cmd, stream=True, detach=False)
-    
+
     stop_pattern= "Build of {b_env}_{arch} complete.".format(b_env=b_env, arch=arch)
     for line in docker_client.api.logs(container=container_name, follow=True, stdout=True, stderr=True, stream=True, tail=5, timestamps=True):
         print(line.decode('UTF-8').strip())
@@ -105,11 +104,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
 
     docker_client.api.stop(container=container_name)
 
-
-if __name__ == '__main__':
-
-    print("Starting...")
-
+def argparser():
     # Check that the correct parameters have been correctly provided
     parser = argparse.ArgumentParser()
 
@@ -137,8 +132,12 @@ if __name__ == '__main__':
     parser_run.add_argument("-c", "--config", required=True, help="Select the configuration to be used during the "
                                                                   "compilation of the kernel.")
 
-    args = vars(parser.parse_args())
+    return vars(parser.parse_args())
 
+if __name__ == '__main__':
+
+    print("Starting...")
+    args = argparser()
     # Check if the base image exists
     if not docker_client.api.images(name="kci_base"):
         print("The base image is missing.")
