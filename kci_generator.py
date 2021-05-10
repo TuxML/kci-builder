@@ -106,7 +106,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
     os.system(f"docker network connect local_default {container.get('Id')}")
 
     # Update local repo of tuxml-kci and build a kernel - USED DURING TEST PHASE SO THAT 'kha_test' IS USED
-    command = "git checkout lava"
+    command = "git checkout main"
     checkout_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
 
     command = "git fetch"
@@ -171,7 +171,6 @@ if __name__ == '__main__':
     args = vars(parser.parse_args())
 
     if args.get('which') == 'lava':
-        print("Starting LAVA docker...")
         lava_is_running(args['set_state'])
         print("Done.")
     else:

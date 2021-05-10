@@ -66,6 +66,7 @@ RUN echo 'admin:password' | chpasswd
 # Upon start, run ssh daemon
 CMD ["/usr/sbin/sshd", "-D"]
 
+RUN python3 -m pip install kernelci
 RUN git clone https://github.com/kernelci/kernelci-core.git
 
 RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list
