@@ -3,7 +3,6 @@ FROM debian:buster
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install only necessary libraries
-# Docker for jenkins really needs procps otherwise the jenkins side fails
 RUN apt-get update && apt-get install --no-install-recommends -y procps
 
 # SSL / HTTPS support
@@ -35,9 +34,12 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     wget \
     xz-utils
 
-# Python 3.7
+# Python 3
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    python3.7 \
+    python3 \
+    python3-dev \
+    python3-venv \
+    python3-wheel \
     python3-jinja2 \
     python3-keyring \
     python3-pyelftools \
@@ -46,18 +48,13 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     python3-yaml \
     python3-pip
 
-# Taken from - https://docs.docker.com/engine/examples/running_ssh_service/#environment-variables
-RUN mkdir /var/run/sshd
-RUN echo 'root:root' | chpasswd
-RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN pip3 install psutil
 
-# SSH login fix. Otherwise user is kicked off after login
-RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
-ENV NOTVISIBLE "in users profile"
-RUN echo "export VISIBLE=now" >> /etc/profile
+RUN pip3 install distro
 
-# expose 22 for ssh server. 7777 for gdb server. 80 for lava communications.
-EXPOSE 22 80 7777
+RUN pip3 install kernelci
+RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list
+
 
 # Create adminuser with password 'password'
 RUN useradd -ms /bin/bash admin
@@ -70,3 +67,4 @@ RUN python3 -m pip install kernelci
 RUN git clone https://github.com/kernelci/kernelci-core.git
 
 RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list
+

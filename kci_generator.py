@@ -4,8 +4,10 @@ import yaml
 import argparse
 import docker
 from docker.errors import APIError
+
 #from apiManager import APIManager
 import subprocess
+
 
 volume_name = "shared_volume"
 dependencies_data = {}
@@ -42,7 +44,6 @@ def lava_is_running(state):
 def build_image(b_env, arch):
     # create a directory containing the Dockerfile (this same directory will contain future metadata)
     path = f"{volume_name}/{b_env}_{arch}"
-
     try:
         # All newly created folders will be inside $volume_name
         os.mkdir(path)
@@ -66,8 +67,10 @@ def create_dockerfile(path, b_env, arch):
         df.write(dependencies_data['arch'][arch].format(b_env_ver=b_env_ver))
         df.write("RUN git clone https://github.com/TuxML/tuxml-kci.git\n")
 
+
 def run_dockerfile(b_env, arch, kver, kconfig):
-    local_shared_volume = os.getcwd() + "/" + volume_name
+    local_shared_volume = os.path.join(os.getcwd(), volume_name)
+
     container_name = f"tuxml-kci-{b_env}_{arch}"
 
     # Start a container that will launch kernel building. Destroy content when exiting.
@@ -83,12 +86,13 @@ def run_dockerfile(b_env, arch, kver, kconfig):
 
     try:
         container = docker_client.api.create_container(image=container_name,
-                                                       name=container_name,
-                                                       volumes=f'/{volume_name}',
-                                                       host_config=binding_config,
-                                                       tty=False,
-                                                       stdin_open=False,
-                                                       working_dir="/tuxml-kci")
+                                                   name=container_name,
+                                                   volumes=f'/{volume_name}',
+                                                   host_config=binding_config,
+                                                   tty=False,
+                                                   stdin_open=True,
+                                                   working_dir="/tuxml-kci")
+
     except APIError:
         # TODO do we really need to force remove here?
         docker_client.api.remove_container(container=container_name, force=True)
@@ -102,6 +106,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
 
     docker_client.api.start(container=container.get('Id'))
 
+
     # Connect the container to the Lava network
     os.system(f"docker network connect local_default {container.get('Id')}")
 
@@ -109,15 +114,19 @@ def run_dockerfile(b_env, arch, kver, kconfig):
     command = "git checkout main"
     checkout_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
 
+
     command = "git fetch"
     fetch_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
 
     command = "git pull"
     pull_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
-    docker_client.api.exec_start(exec_id=checkout_cmd)
+
     docker_client.api.exec_start(exec_id=fetch_cmd)
     docker_client.api.exec_start(exec_id=pull_cmd)
 
+
+
+    # Create a command that will launch the script tuxml_kci.py
     command = f"bash -c \"python3 tuxml_kci.py -b {b_env} -k {kver} -a {arch} -c {kconfig} > /proc/1/fd/1\""
     build_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
     docker_client.api.exec_start(exec_id=build_cmd, stream=True, detach=False)
@@ -130,11 +139,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
 
     #docker_client.api.stop(container=container_name)
 
-
-if __name__ == '__main__':
-
-    print("Starting...")
-
+def argparser():
     # Check that the correct parameters have been correctly provided
     parser = argparse.ArgumentParser()
 
@@ -168,7 +173,10 @@ if __name__ == '__main__':
     parser_run.add_argument("-c", "--config", required=True, help="Select the configuration to be used during the "
                                                                   "compilation of the kernel.")
 
-    args = vars(parser.parse_args())
+    return vars(parser.parse_args())
+
+if __name__ == '__main__':
+
 
     if args.get('which') == 'lava':
         lava_is_running(args['set_state'])
@@ -208,4 +216,5 @@ if __name__ == '__main__':
                     print(f"Starting background build inside '{build_image_name}' container.")
                     print(f"Results will be available shortly in the following path -> '{volume_name}/{build_image_name}'")
                     run_dockerfile(args['build_env'], args['arch'], args['kversion'], args['config'])
+
 
