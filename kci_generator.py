@@ -152,11 +152,8 @@ if __name__ == '__main__':
         if args['build_env'].split('-')[0] in dependencies_data['supported_envs']:
 
             # Create shared directory between containers. This will used to store generated Dockerfiles and output data
-            try:
-                os.makedirs(name=volume_name, exist_ok=True)
-            except OSError as err:
-                print(err)
-
+            os.makedirs(name=volume_name, exist_ok=True)
+ 
             # If the directory is already existing, check if it contains already the image that we need to build
             dir_content = os.listdir(volume_name)
             build_image_name = "{b_env}_{arch}".format(b_env=args['build_env'], arch=args['arch'])
