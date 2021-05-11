@@ -55,3 +55,16 @@ RUN pip3 install distro
 RUN pip3 install kernelci
 RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list
 
+
+# Create adminuser with password 'password'
+RUN useradd -ms /bin/bash admin
+RUN echo 'admin:password' | chpasswd
+
+# Upon start, run ssh daemon
+CMD ["/usr/sbin/sshd", "-D"]
+
+RUN python3 -m pip install kernelci
+RUN git clone https://github.com/kernelci/kernelci-core.git
+
+RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list
+
