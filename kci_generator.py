@@ -175,6 +175,7 @@ def argparser():
 
 if __name__ == '__main__':
 
+    args = argparser()
 
     if args.get('which') == 'lava':
         lava_is_running(args['set_state'])
