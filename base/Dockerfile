@@ -56,4 +56,3 @@ RUN pip3 install kernelci
 
 RUN echo 'deb http://deb.debian.org/debian testing main' >> /etc/apt/sources.list
 
-RUN git clone https://github.com/TuxML/tuxml-kci.git

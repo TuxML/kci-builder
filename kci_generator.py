@@ -5,10 +5,6 @@ import argparse
 import docker
 from docker.errors import APIError
 
-#from apiManager import APIManager
-import subprocess
-
-
 volume_name = "shared_volume"
 dependencies_data = {}
 docker_client = docker.from_env()
@@ -19,27 +15,6 @@ def get_dependencies():
     with open('deps.yaml') as deps_file:
         dependencies_data = yaml.load(deps_file, yaml.FullLoader)
 
-def lava_is_running(state):
-    # If a lava-lab is not running then launch one
-    a = subprocess.check_output(['docker', 'ps', '--filter', 'status=running'])
-    master_state = b'local_master1_1' in a
-    slave_state = b'local_lab-slave-0_1' in a
-    storage_state = b'local_storage_1' in a
-    if state == 'up':        
-        if  master_state or slave_state or storage_state:
-            print("A Lava instance is already running")
-        else:
-            print("No lava running...")
-            os.system("rm -rf lava_kci/output")
-            back = os.getcwd()
-            os.chdir("lava_kci/")
-            os.system("python3 lavalab-gen.py")
-            os.chdir(back)
-            os.system("docker-compose -f lava_kci/output/local/docker-compose.yml up -d")
-            print("Lava now launch.")
-    if state == 'down':
-        if  master_state or slave_state or storage_state:
-            os.system("docker-compose -f lava_kci/output/local/docker-compose.yml down")
 
 def build_image(b_env, arch):
     # create a directory containing the Dockerfile (this same directory will contain future metadata)
@@ -65,16 +40,15 @@ def create_dockerfile(path, b_env, arch):
     with open(path + "/Dockerfile", mode="w") as df:
         df.write("FROM kci_base\n")
         df.write(dependencies_data['arch'][arch].format(b_env_ver=b_env_ver))
+        df.write("RUN git clone https://github.com/TuxML/tuxml-kci.git\n")
+        df.write("RUN git clone https://github.com/ark-sys/kernelci-core.git")
 
 def run_dockerfile(b_env, arch, kver, kconfig):
     local_shared_volume = os.path.join(os.getcwd(), volume_name)
-
     container_name = f"tuxml-kci-{b_env}_{arch}"
 
     # Start a container that will launch kernel building. Destroy content when exiting.
     # Prepare configuration environment and create a container
-
-    lava_is_running('up')
 
     binding_config = docker_client.api.create_host_config(binds={f"{local_shared_volume}/": {
         'bind': f"/{volume_name}",
@@ -103,15 +77,7 @@ def run_dockerfile(b_env, arch, kver, kconfig):
                                                        working_dir="/tuxml-kci")
 
     docker_client.api.start(container=container.get('Id'))
-
-
-    # Connect the container to the Lava network
-    os.system(f"docker network connect local_default {container.get('Id')}")
-
-    # Update local repo of tuxml-kci and build a kernel - USED DURING TEST PHASE SO THAT 'kha_test' IS USED
-    command = "git checkout main"
-    checkout_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
-
+    # Update local repo of tuxml-kci and build a kernel -
 
     command = "git fetch"
     fetch_cmd = docker_client.api.exec_create(container=container_name, cmd=command)
@@ -135,19 +101,13 @@ def run_dockerfile(b_env, arch, kver, kconfig):
         if stop_pattern in line.decode('UTF-8').strip():
             break
 
-    #docker_client.api.stop(container=container_name)
+    docker_client.api.stop(container=container_name)
 
 def argparser():
     # Check that the correct parameters have been correctly provided
     parser = argparse.ArgumentParser()
 
     subparser = parser.add_subparsers()
-
-    # Setting parameters requirement for lava command
-    parser_build = subparser.add_parser('lava')
-    parser_build.set_defaults(which='lava')
-    parser_build.add_argument("-s", "--set_state", required=True,
-                              help="up for start the LAVA docker or down for stop it")
 
     # Setting parameters requirement for build command
     parser_build = subparser.add_parser('build')
@@ -175,44 +135,37 @@ def argparser():
 
 if __name__ == '__main__':
 
+    print("Starting...")
     args = argparser()
-
-    if args.get('which') == 'lava':
-        lava_is_running(args['set_state'])
-        print("Done.")
+    # Check if the base image exists
+    if not docker_client.api.images(name="kci_base"):
+        print("The base image is missing.")
+        print("Please build the base image first with -->> docker build -t kci_base:latest base/ --no-cache")
+        print("This operation must be done only once. Once the base image is available in your system, you won't need to be rebuilt.")
     else:
-        # Check if the base image exists
-        if not docker_client.api.images(name="kci_base"):
-            print("The base image is missing.")
-            print("Please build the base image first with -->> docker build -t kci_base:latest base/ --no-cache")
-            print("This operation must be done only once. Once the base image is available in your system, you won't need to be rebuilt.")
-        else:
-            print("image: kci_base found...")
-            # Populate local dictionary with dependencies list that needs to be written in the Dockerfile
-            get_dependencies()
+        print("image: kci_base found...")
+        # Populate local dictionary with dependencies list that needs to be written in the Dockerfile
+        get_dependencies()
 
-            # Check if the building environment is supported, otherwise stop execution
-            if args['build_env'].split('-')[0] in dependencies_data['supported_envs']:
+        # Check if the building environment is supported, otherwise stop execution
+        if args['build_env'].split('-')[0] in dependencies_data['supported_envs']:
 
-                # Create shared directory between containers. This will used to store generated Dockerfiles and output data
+            # Create shared directory between containers. This will used to store generated Dockerfiles and output data
+            os.makedirs(name=volume_name, exist_ok=True)
+ 
+            # If the directory is already existing, check if it contains already the image that we need to build
+            dir_content = os.listdir(volume_name)
+            build_image_name = "{b_env}_{arch}".format(b_env=args['build_env'], arch=args['arch'])
 
-                os.makedirs(name=volume_name, exist_ok=True)
+            # Test which sub command has been entered and act accordingly
+            if args.get('which') == 'build':
+                if docker_client.api.images(name=build_image_name):
+                    print(f"Image for {build_image_name} exists already.")
+                    print(f"The old image will be deleted and a new version will be created.")
+                build_image(args['build_env'], args['arch'])
 
-
-                # If the directory is already existing, check if it contains already the image that we need to build
-                dir_content = os.listdir(volume_name)
-                build_image_name = "{b_env}_{arch}".format(b_env=args['build_env'], arch=args['arch'])
-
-                # Test which sub command has been entered and act accordingly
-                if args.get('which') == 'build':
-                    if docker_client.api.images(name=build_image_name):
-                        print(f"Image for {build_image_name} exists already.")
-                        print(f"The old image will be deleted and a new version will be created.")
-                    build_image(args['build_env'], args['arch'])
-
-                if args.get('which') == 'run':
-                    print(f"Starting background build inside '{build_image_name}' container.")
-                    print(f"Results will be available shortly in the following path -> '{volume_name}/{build_image_name}'")
-                    run_dockerfile(args['build_env'], args['arch'], args['kversion'], args['config'])
-
+            if args.get('which') == 'run':
+                print(f"Starting background build inside '{build_image_name}' container.")
+                print(f"Results will be available shortly in the following path -> '{volume_name}/{build_image_name}'")
+                run_dockerfile(args['build_env'], args['arch'], args['kversion'], args['config'])
 
